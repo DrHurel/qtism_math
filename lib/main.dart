@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qtism_math/pages/home_page.dart';
+import 'package:qtism_math/pages/home.dart';
+import 'package:qtism_math/pages/qt.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -16,8 +17,10 @@ class MyApp extends StatelessWidget {
       title: 'QTism Math',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color(0xFFABC1F9),
       ),
-      home: const HomePage(),
+      home: QTRobotHomePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
