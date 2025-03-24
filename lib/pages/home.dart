@@ -134,7 +134,7 @@ class QTRobotHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => QT()),
                   );
-                },
+                },  
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 0, 68, 255),
                   padding: EdgeInsets.symmetric(vertical: 14, horizontal: 50),

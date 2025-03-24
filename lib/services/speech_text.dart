@@ -172,7 +172,7 @@ class SpeechText {
             "La bonne réponse serait : **$leftSide = $leftValue**";
       }
     } catch (e) {
-      return "Erreur dans l'évaluation de l'équation : $e";
+      return "Erreur dans l'évaluation de l'équation";
     }
   }
 }
