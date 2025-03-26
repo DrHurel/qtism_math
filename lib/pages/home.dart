@@ -61,7 +61,7 @@ class QTRobotHomePage extends StatelessWidget {
               ),
               SizedBox(height: 30),
               Image.asset(
-                'homeQT.png',
+                'assets/homeQT.png',
                 height: isNarrowScreen
                     ? constraints.maxHeight * 0.3
                     : constraints.maxHeight * 0.5,
@@ -73,11 +73,11 @@ class QTRobotHomePage extends StatelessWidget {
           Widget gridContent = Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 120), // Ajout d'un margin top
+              SizedBox(height: 0), // Ajout d'un margin top
               Text(
                 "Il est capable de :",
                 style: TextStyle(
-                  fontSize: fontSize * 0.55,
+                  fontSize: fontSize * 0.65,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -119,7 +119,7 @@ class QTRobotHomePage extends StatelessWidget {
                         style: TextStyle(
                           // Augmentation de 3 points de taille pour la police en mode mobile
                           fontSize: isNarrowScreen
-                              ? (fontSize * 0.35) + 3
+                              ? (fontSize * 0.35) + 3.1
                               : fontSize * 0.35,
                         ),
                       ),
@@ -134,10 +134,10 @@ class QTRobotHomePage extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (context) => QT()),
                   );
-                },  
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 0, 68, 255),
-                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 50),
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -145,7 +145,7 @@ class QTRobotHomePage extends StatelessWidget {
                 child: Text(
                   "Essayer",
                   style:
-                      TextStyle(color: Colors.white, fontSize: fontSize * 0.35),
+                      TextStyle(color: Colors.white, fontSize: fontSize * 0.5),
                 ),
               ),
             ],
