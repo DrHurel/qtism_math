@@ -69,7 +69,6 @@ class _TypingEffectState extends State<TypingEffect> {
   }
 }
 
-// Nouveau widget pour gérer le texte enrichi
 class RichTextRenderer extends StatelessWidget {
   final String text;
   final TextStyle baseStyle;
@@ -90,15 +89,11 @@ class RichTextRenderer extends StatelessWidget {
   TextSpan _buildTextSpan(String text, TextStyle baseStyle) {
     List<TextSpan> spans = [];
 
-    // Utiliser une expression régulière pour trouver les textes entre **
     RegExp exp = RegExp(r'\*\*(.*?)\*\*');
 
-    // Index de départ pour le texte normal
     int lastIndex = 0;
 
-    // Trouver toutes les correspondances
     for (Match match in exp.allMatches(text)) {
-      // Ajouter le texte normal avant le match
       if (match.start > lastIndex) {
         spans.add(TextSpan(
           text: text.substring(lastIndex, match.start),
@@ -106,17 +101,14 @@ class RichTextRenderer extends StatelessWidget {
         ));
       }
 
-      // Ajouter le texte en gras (sans les **)
       spans.add(TextSpan(
         text: match.group(1),
         style: baseStyle.copyWith(fontWeight: FontWeight.bold),
       ));
 
-      // Mettre à jour l'index de départ pour le prochain texte normal
       lastIndex = match.end;
     }
 
-    // Ajouter le reste du texte après le dernier match
     if (lastIndex < text.length) {
       spans.add(TextSpan(
         text: text.substring(lastIndex),
@@ -273,17 +265,15 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
     );
   }
 
-  // Fonction pour calculer la taille de police adaptative selon la taille d'écran
   double _getAdaptiveFontSize(BuildContext context,
       {double baseFontSize = 21.0, double minFontSize = 12.0}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Utiliser la plus petite dimension pour le calcul
     final smallestDimension =
         screenWidth < screenHeight ? screenWidth : screenHeight;
 
-    const referenceSize = 600.0; // Taille référence (desktop)
+    const referenceSize = 600.0;
 
     final fontSizeRatio = (smallestDimension / referenceSize).clamp(0.0, 1.0);
 
@@ -412,9 +402,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
           width: double.infinity,
           constraints: BoxConstraints(
             minHeight: _isDesktop ? screenHeight * 0.3 : screenHeight * 0.2,
-            maxWidth: _isDesktop
-                ? 550
-                : double.infinity, // Set max width to 400px in desktop mode
+            maxWidth: _isDesktop ? 550 : double.infinity,
           ),
           padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
@@ -457,7 +445,6 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Calculer la taille adaptative pour le TextField
     final textFieldFontSize =
         _getAdaptiveFontSize(context, baseFontSize: 15.0, minFontSize: 10.0);
     final hintTextSize =
@@ -508,7 +495,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                         ),
                       ),
                       Expanded(
-                        flex: 2, // Moins d'espace pour la bulle
+                        flex: 2,
                         child: _buildChatBubble(context),
                       ),
                     ],
@@ -530,8 +517,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontStyle: FontStyle.italic,
-                  fontSize: textFieldFontSize *
-                      0.9, // Légèrement plus petit que la taille de police de saisie
+                  fontSize: textFieldFontSize * 0.9,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -561,7 +547,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                     child: Icon(_isListening ? Icons.stop : Icons.mic,
                         color: Colors.white),
                     mini: !_isDesktop,
-                    heroTag: 'mic_button', // Ajout du heroTag unique
+                    heroTag: 'mic_button',
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -591,7 +577,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                     shape: const CircleBorder(),
                     child: const Icon(Icons.send, color: Colors.white),
                     mini: !_isDesktop,
-                    heroTag: 'send_button', // Ajout du heroTag unique
+                    heroTag: 'send_button',
                   ),
                 ],
               ),

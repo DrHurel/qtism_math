@@ -37,10 +37,8 @@ class SpeechText {
             _currentText = recognizedText;
             onTranscription(_currentText);
 
-            // Convertir le texte en expression mathématique
             String mathExpression = convertToMathExpression(_currentText);
 
-            // Vérifier si c'est une équation (contient =)
             if (mathExpression.contains('=')) {
               _silenceTimer?.cancel();
               String result = evaluateEquation(mathExpression);
@@ -52,7 +50,6 @@ class SpeechText {
                 onProcessingComplete();
               });
             } else {
-              // Pour les expressions sans =, suivre la logique précédente
               if (isValidMathExpression(mathExpression)) {
                 _silenceTimer?.cancel();
                 String result = evaluateMathExpression(mathExpression);
@@ -64,12 +61,10 @@ class SpeechText {
                   onProcessingComplete();
                 });
               } else {
-                // Réinitialiser le timer de silence pour attendre plus de contexte
                 _silenceTimer?.cancel();
                 _silenceTimer = Timer(const Duration(seconds: 2), () {
                   if (_currentText.isNotEmpty) {
                     mathExpression = convertToMathExpression(_currentText);
-                    // Traiter d'abord les équations
                     if (mathExpression.contains('=')) {
                       String result = evaluateEquation(mathExpression);
                       onResult(mathExpression, result);
@@ -79,9 +74,7 @@ class SpeechText {
                       Timer(const Duration(milliseconds: 500), () {
                         onProcessingComplete();
                       });
-                    }
-                    // Puis les expressions mathématiques standard
-                    else if (isValidMathExpression(mathExpression)) {
+                    } else if (isValidMathExpression(mathExpression)) {
                       String result = evaluateMathExpression(mathExpression);
                       onResult(mathExpression, result);
                       _currentText = "";
@@ -107,7 +100,6 @@ class SpeechText {
     return available;
   }
 
-  // Méthode pour valider l'expression mathématique
   static bool isValidMathExpression(String expression) {
     try {
       Parser p = Parser();
@@ -130,31 +122,24 @@ class SpeechText {
         .replaceAll("égal", "=")
         .replaceAll("égale", "=")
         .replaceAll("égaux", "=")
-        .replaceAll(" ", ""); // Supprimer les espaces
-
+        .replaceAll(" ", "");
     return text;
   }
 
   static String evaluateMathExpression(String expression) {
     try {
-      // Check if the expression contains an equals sign
       if (expression.contains('=')) {
-        // If it's an equation, use the existing equation evaluation method
         return evaluateEquation(expression);
       }
 
-      // For standard mathematical expressions
       Parser p = Parser();
       Expression exp = p.parse(expression);
       ContextModel cm = ContextModel();
 
-      // Evaluate the expression
       double eval = exp.evaluate(EvaluationType.REAL, cm);
 
-      // Always return an integer
       return "Le résultat du calcul **$expression** est **${eval.toInt()}**";
     } catch (e) {
-      // If parsing fails, try to evaluate it as an equation
       try {
         return evaluateEquation(expression);
       } catch (_) {

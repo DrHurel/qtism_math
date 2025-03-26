@@ -22,21 +22,15 @@ class QTRobotHomePage extends StatelessWidget {
       backgroundColor: const Color(0xFFABC1F9),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Déterminer si l'écran est étroit
           bool isNarrowScreen = constraints.maxWidth < 800;
 
-          // Calculer les tailles en fonction de l'écran
           double fontSize = constraints.maxWidth * 0.035;
-          // Maintenir la taille fixe du grid même sur les petits écrans
           double gridItemWidth = (800 / 4) * 0.75;
 
-          // Si l'écran est trop étroit, ajuster pour que le grid reste lisible
           if (isNarrowScreen) {
-            fontSize = constraints.maxWidth *
-                0.05; // Police plus grande sur petit écran
+            fontSize = constraints.maxWidth * 0.05;
           }
 
-          // Créer le contenu du robot
           Widget robotContent = Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,11 +63,10 @@ class QTRobotHomePage extends StatelessWidget {
             ],
           );
 
-          // Créer le contenu du grid
           Widget gridContent = Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 0), // Ajout d'un margin top
+              SizedBox(height: 0),
               Text(
                 "Il est capable de :",
                 style: TextStyle(
@@ -117,7 +110,6 @@ class QTRobotHomePage extends StatelessWidget {
                         text,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          // Augmentation de 3 points de taille pour la police en mode mobile
                           fontSize: isNarrowScreen
                               ? (fontSize * 0.35) + 3.1
                               : fontSize * 0.35,
