@@ -140,6 +140,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   bool _isTransitioning = false;
+  bool _isCorrectAnswer = false;
 
   @override
   void initState() {
@@ -187,10 +188,11 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
     String mathExpression = SpeechText.convertToMathExpression(text);
     String result = SpeechText.evaluateMathExpression(mathExpression);
 
+    // Speak the result
+    SpeechText.speakResult(result);
+
     _showResult(result);
   }
-
-  bool _isCorrectAnswer = false;
 
   void _showResult(String result) {
     String newEmotion = "neutral";
