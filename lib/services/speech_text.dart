@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:math_expressions/math_expressions.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:async';
 import 'dart:math';
 
 class SpeechText {
   static Timer? _silenceTimer;
   static String _currentText = "";
+  static FlutterTts _flutterTts = FlutterTts();
+
+  static Future<void> speakResult(String text) async {
+    await _flutterTts.setLanguage('fr-FR');
+    await _flutterTts.setPitch(1.1);
+    await _flutterTts.setSpeechRate(1);
+    await _flutterTts.speak(text.replaceAll('**', ''));
+  }
 
   static Future<bool> toggleRecording(
       Function(String transcription) onTranscription,
@@ -43,6 +52,7 @@ class SpeechText {
               _silenceTimer?.cancel();
               String result = evaluateEquation(mathExpression);
               onResult(mathExpression, result);
+              speakResult(result); // Add speaking the result
               _currentText = "";
               speech.stop();
 
@@ -54,6 +64,7 @@ class SpeechText {
                 _silenceTimer?.cancel();
                 String result = evaluateMathExpression(mathExpression);
                 onResult(mathExpression, result);
+                speakResult(result); // Add speaking the result
                 _currentText = "";
                 speech.stop();
 
@@ -68,6 +79,7 @@ class SpeechText {
                     if (mathExpression.contains('=')) {
                       String result = evaluateEquation(mathExpression);
                       onResult(mathExpression, result);
+                      speakResult(result); // Add speaking the result
                       _currentText = "";
                       speech.stop();
 
@@ -77,6 +89,7 @@ class SpeechText {
                     } else if (isValidMathExpression(mathExpression)) {
                       String result = evaluateMathExpression(mathExpression);
                       onResult(mathExpression, result);
+                      speakResult(result); // Add speaking the result
                       _currentText = "";
                       speech.stop();
 
@@ -100,6 +113,7 @@ class SpeechText {
     return available;
   }
 
+  // Existing methods remain the same...
   static bool isValidMathExpression(String expression) {
     try {
       Parser p = Parser();
