@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:qtism_math/services/speech_text.dart';
 
 class TypingEffect extends StatefulWidget {
@@ -120,6 +122,8 @@ class RichTextRenderer extends StatelessWidget {
   }
 }
 
+enum ProblemType { none, calculation, trueOrFalse }
+
 class QT extends StatefulWidget {
   const QT({super.key});
 
@@ -141,6 +145,15 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
   late Animation<double> _opacityAnimation;
   bool _isTransitioning = false;
   bool _isCorrectAnswer = false;
+  bool _isDefaultBubbleStyle = true;
+
+  ProblemType _currentProblemType = ProblemType.none;
+  ProblemType _lastButtonClicked = ProblemType.none;
+
+  String _generatedProblem = "";
+  bool? _expectedTruthValue;
+
+  final FlutterTts _flutterTts = FlutterTts();
 
   @override
   void initState() {
@@ -170,64 +183,153 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  Future<void> _speakResult(String text) async {
+    await _flutterTts.setLanguage('fr-FR');
+    await _flutterTts.setPitch(1.1);
+    await _flutterTts.setSpeechRate(1);
+    await _flutterTts.speak(text
+        .replaceAll('**', '')
+        .replaceAll('*', 'fois')
+        .replaceAll('/', 'divisé par')
+        .replaceAll('-', 'moins'));
+  }
+
   void _clearTranscription() {
     setState(() {
       _transcribedText = "";
     });
   }
 
-  void _handleSubmitted(String text) {
-    if (text.isEmpty) return;
+  void _generateCalculationProblem() {
+    final random = Random();
+    final operations = ['+', '-', '*', '/'];
+    final operation = operations[random.nextInt(operations.length)];
 
-    setState(() {
-      _transcribedText = text;
-    });
-
-    _textController.clear();
-
-    String mathExpression = SpeechText.convertToMathExpression(text);
-    String result = SpeechText.evaluateMathExpression(mathExpression);
-
-    // Speak the result
-    SpeechText.speakResult(result);
-
-    _showResult(result);
-  }
-
-  void _showResult(String result) {
-    String newEmotion = "neutral";
-    bool isCorrect = false;
-
-    if (result.startsWith("Oui, bonne réponse")) {
-      newEmotion = "enjoy";
-      isCorrect = true;
-    } else if (result.startsWith("Non")) {
-      newEmotion = "sad";
-      isCorrect = false;
-    } else {
-      newEmotion = "happy";
-      isCorrect = true;
+    int a, b;
+    switch (operation) {
+      case '+':
+        a = random.nextInt(21);
+        b = random.nextInt(21);
+        break;
+      case '-':
+        a = random.nextInt(21);
+        b = random.nextInt(a + 1);
+        break;
+      case '*':
+        a = random.nextInt(11);
+        b = random.nextInt(11);
+        break;
+      case '/':
+        b = random.nextInt(9) + 1;
+        a = b * (random.nextInt(10) + 1);
+        break;
+      default:
+        a = 0;
+        b = 0;
     }
 
-    if (newEmotion != _currentEmotion && _currentEmotion != "neutral") {
+    String problem;
+    switch (operation) {
+      case '+':
+        problem = "$a + $b";
+        break;
+      case '-':
+        problem = "$a - $b";
+        break;
+      case '*':
+        problem = "$a × $b";
+        break;
+      case '/':
+        problem = "$a ÷ $b";
+        break;
+      default:
+        problem = "";
+    }
+
+    setState(() {
+      _currentProblemType = ProblemType.calculation;
+      _lastButtonClicked = ProblemType.calculation;
+      _generatedProblem = problem;
+      _resultText = "Calcule le résultat de : **$problem**";
+      _isTyping = true;
+      _isDefaultBubbleStyle = true;
+    });
+
+    _speakResult("Calcule le résultat de : $problem");
+    _resetEmotion();
+  }
+
+  void _generateTrueOrFalseProblem() {
+    final random = Random();
+    final operations = ['+', '-', '*', '/'];
+    final operation = operations[random.nextInt(operations.length)];
+
+    int a, b, result, falseResult;
+    switch (operation) {
+      case '+':
+        a = random.nextInt(20);
+        b = random.nextInt(20);
+        result = a + b;
+        falseResult = result + (random.nextInt(3) + 1);
+        break;
+      case '-':
+        a = random.nextInt(20);
+        b = random.nextInt(a + 1);
+        result = a - b;
+        falseResult = result - (random.nextInt(3) + 1);
+        break;
+      case '*':
+        a = random.nextInt(11);
+        b = random.nextInt(11);
+        result = a * b;
+        falseResult = result + (random.nextInt(3) + 1);
+        break;
+      case '/':
+        b = random.nextInt(2) + 1;
+        a = b * (random.nextInt(10) + 1);
+        result = a ~/ b;
+        falseResult = result + (random.nextInt(3) + 1);
+        break;
+      default:
+        a = 0;
+        b = 0;
+        result = 0;
+        falseResult = 0;
+    }
+
+    final isTrue = random.nextBool();
+    String problem;
+    if (isTrue) {
+      problem = "$a $operation $b = $result";
+      _expectedTruthValue = true;
+    } else {
+      problem = "$a $operation $b = $falseResult";
+      _expectedTruthValue = false;
+    }
+
+    setState(() {
+      _currentProblemType = ProblemType.trueOrFalse;
+      _lastButtonClicked = ProblemType.trueOrFalse;
+      _generatedProblem = problem;
+      _resultText = "**$problem** est vrai ou faux ?";
+      _isTyping = true;
+      _isDefaultBubbleStyle = true;
+    });
+
+    _speakResult("$problem est vrai ou faux ?");
+    _resetEmotion();
+  }
+
+  void _resetEmotion() {
+    if (_currentEmotion != "neutral") {
       setState(() {
         _previousEmotion = _currentEmotion;
-        _currentEmotion = newEmotion;
+        _currentEmotion = "neutral";
         _isTransitioning = true;
-        _isTyping = true;
-        _resultText = result;
-        _isCorrectAnswer = isCorrect;
       });
 
       _animationController.reset();
       _animationController.forward();
-    } else {
-      setState(() {
-        _currentEmotion = newEmotion;
-        _isTyping = true;
-        _resultText = result;
-        _isCorrectAnswer = isCorrect;
-      });
     }
   }
 
@@ -254,7 +356,14 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
         });
       },
       (expression, result) {
-        _showResult(result);
+        // Au lieu d'appeler directement _showResult, on va traiter selon le type de problème
+        if (_lastButtonClicked == ProblemType.calculation) {
+          _handleCalculationVoiceSubmission(_transcribedText);
+        } else if (_lastButtonClicked == ProblemType.trueOrFalse) {
+          _handleTrueOrFalseVoiceSubmission(_transcribedText);
+        } else {
+          _showResult(result);
+        }
       },
       () {
         _clearTranscription();
@@ -265,6 +374,245 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
         });
       },
     );
+  }
+
+  void _handleCalculationVoiceSubmission(String text) {
+    // Nettoyons d'abord le texte pour le traitement
+    String cleanedText = text.replaceAll(RegExp(r'[^0-9-]'), '').trim();
+
+    try {
+      // Essayons d'extraire un nombre de la transcription
+      int? userAnswer;
+
+      // Si c'est juste un nombre, on l'utilise directement
+      if (RegExp(r'^-?\d+$').hasMatch(cleanedText)) {
+        userAnswer = int.parse(cleanedText);
+      } else {
+        // Sinon, on cherche le premier nombre dans la transcription
+        RegExp regExp = RegExp(r'-?\d+');
+        var matches = regExp.allMatches(text);
+        if (matches.isNotEmpty) {
+          userAnswer = int.parse(matches.first.group(0)!);
+        }
+      }
+
+      if (userAnswer != null) {
+        // Maintenant traitons comme dans _handleCalculationSubmission
+        String operation = _generatedProblem;
+        int correctAnswer;
+
+        if (operation.contains('+')) {
+          List<String> parts = operation.split('+');
+          correctAnswer =
+              int.parse(parts[0].trim()) + int.parse(parts[1].trim());
+        } else if (operation.contains('-')) {
+          List<String> parts = operation.split('-');
+          correctAnswer =
+              int.parse(parts[0].trim()) - int.parse(parts[1].trim());
+        } else if (operation.contains('×')) {
+          List<String> parts = operation.split('×');
+          correctAnswer =
+              int.parse(parts[0].trim()) * int.parse(parts[1].trim());
+        } else if (operation.contains('÷')) {
+          List<String> parts = operation.split('÷');
+          correctAnswer =
+              int.parse(parts[0].trim()) ~/ int.parse(parts[1].trim());
+        } else {
+          correctAnswer = -1;
+        }
+
+        if (userAnswer == correctAnswer) {
+          _showResult(
+              "Oui, bonne réponse. **$_generatedProblem = $correctAnswer** est correct !");
+        } else {
+          _showResult("Non, ce n'est pas la bonne réponse. "
+              "Le résultat de **$_generatedProblem** est **$correctAnswer**.");
+        }
+
+        setState(() {
+          _lastButtonClicked = ProblemType.none;
+          _currentProblemType = ProblemType.none;
+        });
+      } else {
+        _showResult(
+            "Je n'ai pas compris votre réponse. Veuillez dire clairement un nombre.");
+      }
+    } catch (e) {
+      _showResult(
+          "Je n'ai pas compris votre réponse. Veuillez dire un nombre.");
+    }
+  }
+
+  void _handleTrueOrFalseVoiceSubmission(String text) {
+    // Nettoyons la transcription et passons-la en minuscules
+    String cleanedText = text.toLowerCase().trim();
+    bool? userAnswer;
+
+    // On recherche des mots-clés pour vrai/faux dans toute la transcription
+    if (cleanedText.contains('vrai') ||
+        cleanedText.contains('true') ||
+        cleanedText.contains('oui') ||
+        cleanedText.contains('yes') ||
+        cleanedText.contains('correct')) {
+      userAnswer = true;
+    } else if (cleanedText.contains('faux') ||
+        cleanedText.contains('false') ||
+        cleanedText.contains('non') ||
+        cleanedText.contains('no') ||
+        cleanedText.contains('incorrect')) {
+      userAnswer = false;
+    }
+
+    if (userAnswer != null) {
+      if (userAnswer == _expectedTruthValue) {
+        _showResult(
+            "Oui, c'est la bonne réponse ! **$_generatedProblem** est **${userAnswer ? 'vrai' : 'faux'}**.");
+      } else {
+        _showResult("Non, ce n'est pas la bonne réponse. "
+            "**$_generatedProblem** est en fait **${_expectedTruthValue! ? 'vrai' : 'faux'}**.");
+      }
+      setState(() {
+        _lastButtonClicked = ProblemType.none;
+        _currentProblemType = ProblemType.none;
+      });
+    } else {
+      _showResult(
+          "Je n'ai pas compris votre réponse. Veuillez dire 'vrai' ou 'faux'.");
+    }
+  }
+
+  void _handleSubmitted(String text) {
+    if (text.isEmpty) return;
+
+    setState(() {
+      _transcribedText = text;
+    });
+
+    _textController.clear();
+
+    switch (_lastButtonClicked) {
+      case ProblemType.calculation:
+        _handleCalculationSubmission(text);
+        break;
+      case ProblemType.trueOrFalse:
+        _handleTrueOrFalseSubmission(text);
+        break;
+      default:
+        String mathExpression = SpeechText.convertToMathExpression(text);
+        String result = SpeechText.evaluateMathExpression(mathExpression);
+        _showResult(result);
+    }
+  }
+
+  void _handleCalculationSubmission(String text) {
+    try {
+      int userAnswer = int.parse(text);
+
+      String operation = _generatedProblem;
+      int correctAnswer;
+
+      if (operation.contains('+')) {
+        List<String> parts = operation.split('+');
+        correctAnswer = int.parse(parts[0].trim()) + int.parse(parts[1].trim());
+      } else if (operation.contains('-')) {
+        List<String> parts = operation.split('-');
+        correctAnswer = int.parse(parts[0].trim()) - int.parse(parts[1].trim());
+      } else if (operation.contains('×')) {
+        List<String> parts = operation.split('×');
+        correctAnswer = int.parse(parts[0].trim()) * int.parse(parts[1].trim());
+      } else if (operation.contains('÷')) {
+        List<String> parts = operation.split('÷');
+        correctAnswer =
+            int.parse(parts[0].trim()) ~/ int.parse(parts[1].trim());
+      } else {
+        correctAnswer = -1;
+      }
+
+      if (userAnswer == correctAnswer) {
+        _showResult(
+            "Oui, bonne réponse. **$_generatedProblem = $correctAnswer** est correct !");
+      } else {
+        _showResult("Non, ce n'est pas la bonne réponse. "
+            "Le résultat de **$_generatedProblem** est **$correctAnswer**.");
+      }
+
+      setState(() {
+        _lastButtonClicked = ProblemType.none;
+        _currentProblemType = ProblemType.none;
+      });
+    } catch (e) {
+      _showResult("Je n'ai pas compris votre réponse. Entrez un nombre.");
+    }
+  }
+
+  void _handleTrueOrFalseSubmission(String text) {
+    text = text.toLowerCase().trim();
+    bool? userAnswer;
+
+    if (text == 'vrai' || text == 'true') {
+      userAnswer = true;
+    } else if (text == 'faux' || text == 'false') {
+      userAnswer = false;
+    }
+
+    if (userAnswer != null) {
+      if (userAnswer == _expectedTruthValue) {
+        _showResult(
+            "Oui, c'est la bonne réponse ! **$_generatedProblem** est **${userAnswer ? 'vrai' : 'faux'}**.");
+      } else {
+        _showResult("Non, ce n'est pas la bonne réponse. "
+            "**$_generatedProblem** est en fait **${_expectedTruthValue! ? 'vrai' : 'faux'}**.");
+      }
+      setState(() {
+        _lastButtonClicked = ProblemType.none;
+        _currentProblemType = ProblemType.none;
+      });
+    } else {
+      _showResult(
+          "Je n'ai pas compris votre réponse. Répondez par 'vrai' ou 'faux'.");
+    }
+  }
+
+  void _showResult(String result) {
+    String newEmotion = "neutral";
+    bool isCorrect = false;
+
+    if (result.startsWith("Oui, bonne réponse") ||
+        result.startsWith("Oui, c'est la bonne réponse")) {
+      newEmotion = "enjoy";
+      isCorrect = true;
+    } else if (result.startsWith("Non")) {
+      newEmotion = "sad";
+      isCorrect = false;
+    } else {
+      newEmotion = "happy";
+      isCorrect = true;
+    }
+
+    if (newEmotion != _currentEmotion && _currentEmotion != "neutral") {
+      setState(() {
+        _previousEmotion = _currentEmotion;
+        _currentEmotion = newEmotion;
+        _isTransitioning = true;
+        _isTyping = true;
+        _resultText = result;
+        _isCorrectAnswer = isCorrect;
+        _isDefaultBubbleStyle = false; // Changer le style de la bulle
+      });
+
+      _animationController.reset();
+      _animationController.forward();
+    } else {
+      setState(() {
+        _currentEmotion = newEmotion;
+        _isTyping = true;
+        _resultText = result;
+        _isCorrectAnswer = isCorrect;
+        _isDefaultBubbleStyle = false;
+      });
+    }
+
+    _speakResult(result);
   }
 
   double _getAdaptiveFontSize(BuildContext context,
@@ -379,20 +727,19 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
 
     final adaptiveFontSize = _getAdaptiveFontSize(context);
 
-    final Color borderColor = _resultText.isEmpty
+    final Color borderColor = _isDefaultBubbleStyle
         ? const Color.fromARGB(255, 194, 194, 194)
         : _isCorrectAnswer
             ? const Color.fromARGB(255, 144, 226, 151)
             : const Color.fromARGB(255, 255, 104, 137);
 
-    final Color backgroundColor = _resultText.isEmpty
+    final Color backgroundColor = _isDefaultBubbleStyle
         ? const Color.fromARGB(255, 255, 255, 255)
         : _isCorrectAnswer
             ? const Color.fromARGB(255, 239, 255, 239)
             : const Color.fromARGB(255, 255, 237, 239);
 
-    final Color textColor =
-        _resultText.isEmpty ? Colors.black87 : Colors.black87;
+    final Color textColor = Colors.black87;
 
     final TextStyle textStyle =
         TextStyle(color: textColor, fontSize: adaptiveFontSize);
@@ -525,6 +872,43 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _generateCalculationProblem,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7386B6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 25),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Question de calcul'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _generateTrueOrFalseProblem,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D9488),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 25),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('Vrai ou faux'),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),

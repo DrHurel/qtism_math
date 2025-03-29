@@ -1,3 +1,5 @@
+// Dans le fichier speech_text.dart, ajoutons une fonction pour préparer le texte pour TTS
+
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:math_expressions/math_expressions.dart';
@@ -14,7 +16,10 @@ class SpeechText {
     await _flutterTts.setLanguage('fr-FR');
     await _flutterTts.setPitch(1.1);
     await _flutterTts.setSpeechRate(1);
-    await _flutterTts.speak(text.replaceAll('**', ''));
+    await _flutterTts.speak(text
+        .replaceAll('*', 'fois')
+        .replaceAll('/', 'divisé par')
+        .replaceAll('-', 'moins'));
   }
 
   static Future<bool> toggleRecording(
@@ -46,61 +51,38 @@ class SpeechText {
             _currentText = recognizedText;
             onTranscription(_currentText);
 
-            String mathExpression = convertToMathExpression(_currentText);
+            // Détecter si l'utilisateur a fini de parler
+            _silenceTimer?.cancel();
+            _silenceTimer = Timer(const Duration(seconds: 2), () {
+              if (_currentText.isNotEmpty) {
+                // Traiter le texte comme une expression mathématique si nécessaire
+                String mathExpression = convertToMathExpression(_currentText);
+                if (mathExpression.contains('=') ||
+                    isValidMathExpression(mathExpression)) {
+                  String result = mathExpression.contains('=')
+                      ? evaluateEquation(mathExpression)
+                      : evaluateMathExpression(mathExpression);
 
-            if (mathExpression.contains('=')) {
-              _silenceTimer?.cancel();
-              String result = evaluateEquation(mathExpression);
-              onResult(mathExpression, result);
-              speakResult(result); // Add speaking the result
-              _currentText = "";
-              speech.stop();
+                  onResult(mathExpression, result);
+                  _currentText = "";
+                  speech.stop();
 
-              Timer(const Duration(milliseconds: 500), () {
-                onProcessingComplete();
-              });
-            } else {
-              if (isValidMathExpression(mathExpression)) {
-                _silenceTimer?.cancel();
-                String result = evaluateMathExpression(mathExpression);
-                onResult(mathExpression, result);
-                speakResult(result); // Add speaking the result
-                _currentText = "";
-                speech.stop();
+                  Timer(const Duration(milliseconds: 500), () {
+                    onProcessingComplete();
+                  });
+                } else {
+                  // Si ce n'est pas une expression mathématique valide, renvoyer juste la transcription
+                  // pour que l'application puisse la traiter selon son contexte
+                  onResult(_currentText, "");
+                  _currentText = "";
+                  speech.stop();
 
-                Timer(const Duration(milliseconds: 500), () {
-                  onProcessingComplete();
-                });
-              } else {
-                _silenceTimer?.cancel();
-                _silenceTimer = Timer(const Duration(seconds: 2), () {
-                  if (_currentText.isNotEmpty) {
-                    mathExpression = convertToMathExpression(_currentText);
-                    if (mathExpression.contains('=')) {
-                      String result = evaluateEquation(mathExpression);
-                      onResult(mathExpression, result);
-                      speakResult(result); // Add speaking the result
-                      _currentText = "";
-                      speech.stop();
-
-                      Timer(const Duration(milliseconds: 500), () {
-                        onProcessingComplete();
-                      });
-                    } else if (isValidMathExpression(mathExpression)) {
-                      String result = evaluateMathExpression(mathExpression);
-                      onResult(mathExpression, result);
-                      speakResult(result); // Add speaking the result
-                      _currentText = "";
-                      speech.stop();
-
-                      Timer(const Duration(milliseconds: 500), () {
-                        onProcessingComplete();
-                      });
-                    }
-                  }
-                });
+                  Timer(const Duration(milliseconds: 500), () {
+                    onProcessingComplete();
+                  });
+                }
               }
-            }
+            });
           }
         },
         listenFor: const Duration(seconds: 30),
