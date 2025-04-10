@@ -1,11 +1,12 @@
 import 'package:qtism_math/common/app_strings.dart';
+import 'package:qtism_math/services/AI.dart';
 import 'package:qtism_math/services/speech_text.dart';
 import 'package:qtism_math/services/math_expression_processor.dart';
-import 'package:qtism_math/services/voice_input_parser.dart';
 
 class InputService {
   String transcribedText = "";
   bool isListening = false;
+  final AICommunication ai = AICommunication();
   
   // Callback for updating UI when input changes
   final Function(String transcription) onTranscriptionChanged;
@@ -49,34 +50,19 @@ class InputService {
     return SpeechText.evaluateMathExpression(mathExpression);
   }
   
-  int? parseCalculationInput(String text) {
-    try {
-      return int.parse(text);
-    } catch (e) {
-      return null;
-    }
+  Future<int?> extractNumberFromText(String text) async {
+    return await ai.extractUserResponseCalculValue(text);
   }
   
-  int? extractNumberFromVoiceText(String text) {
-    return MathExpressionProcessor.extractNumberFromVoiceText(text);
+  Future<bool?> parseTrueFalseInput(String text) async {
+    String aiResponse = await ai.translateUserResponseTrueFalse(text);
+
+    aiResponse = aiResponse.toLowerCase().trim();
+
+    if (aiResponse.contains("vrai")) return true;
+    if (aiResponse.contains("faux")) return false;
+
+    return null; // indécis ou réponse imprévisible
   }
   
-  bool? parseTrueFalseInput(String text) {
-    text = text.toLowerCase().trim();
-    
-    if (text == AppStrings.trueValue || text == 'true') {
-      return true;
-    } else if (text == AppStrings.falseValue || text == 'false') {
-      return false;
-    }
-    return null;
-  }
-  
-  bool? parseTrueFalseVoiceInput(String text) {
-    return VoiceInputParser.parseTrueFalseResponse(
-      text,
-      additionalTrueKeywords: ['oui', 'yes', 'correct'],
-      additionalFalseKeywords: ['non', 'no', 'incorrect']
-    );
-  }
 }

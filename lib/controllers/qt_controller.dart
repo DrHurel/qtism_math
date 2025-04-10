@@ -98,22 +98,27 @@ class QTController {
     _emotionService.resetEmotion();
   }
   
-  Future<void> handleVoiceInput(AnimationController animationController) async {
+  void handleVoiceInput(AnimationController animationController) {
     resetEmotion();
     _resetAnimation(animationController);
     
-    await _inputService.handleVoiceInput((result) {
+    _inputService.handleVoiceInput((result) {
       _processVoiceResult(result, animationController);
     });
   }
   
-  void _processVoiceResult(String text, AnimationController? animationController) {
+  void _processVoiceResult(String text, AnimationController animationController) {
+    if (text.isEmpty) return;
+    
+    setState(() {
+      transcribedText = text;
+    });
     switch (_problemService.currentProblemType) {
       case ProblemType.calculation:
-        handleCalculationVoiceSubmission(text, animationController);
+        handleCalculationSubmission(text, animationController);
         break;
       case ProblemType.trueOrFalse:
-        handleTrueOrFalseVoiceSubmission(text, animationController);
+        handleTrueOrFalseSubmission(text, animationController);
         break;
       default:
         showResult(text, animationController);
@@ -146,37 +151,22 @@ class QTController {
   }
   
   void handleCalculationSubmission(String text, AnimationController animationController) {
-    int? userAnswer = _inputService.parseCalculationInput(text);
-    
-    if (userAnswer != null) {
-      String result = _problemService.checkCalculationAnswer(userAnswer);
+    _inputService.extractNumberFromText(text).then((value) {
+      if (value != null) {
+      String result = _problemService.checkCalculationAnswer(value);
       showResult(result, animationController);
-    } else {
-      showResult(AppStrings.invalidNumberInput, animationController);
-    }
+      } else {
+        showResult(AppStrings.invalidNumberInput, animationController);
+      }
+    });
   }
-  
-  void handleCalculationVoiceSubmission(String text, AnimationController? animationController) {
-    int? userAnswer = _inputService.extractNumberFromVoiceText(text);
-    
-    if (userAnswer != null) {
-      String result = _problemService.checkCalculationAnswer(userAnswer);
-      showResult(result, animationController);
-    } else {
-      showResult(AppStrings.invalidVoiceNumberInput, animationController);
-    }
-  }
+
   
   void handleTrueOrFalseSubmission(String text, AnimationController animationController) {
-    bool? userAnswer = _inputService.parseTrueFalseInput(text);
-    String result = _problemService.checkTrueFalseAnswer(userAnswer);
-    showResult(result, animationController);
-  }
-  
-  void handleTrueOrFalseVoiceSubmission(String text, AnimationController? animationController) {
-    bool? userAnswer = _inputService.parseTrueFalseVoiceInput(text);
-    String result = _problemService.checkTrueFalseAnswer(userAnswer);
-    showResult(result, animationController);
+    _inputService.parseTrueFalseInput(text).then((value) {
+      String result = _problemService.checkTrueFalseAnswer(value);
+      showResult(result, animationController);
+    });
   }
   
   void showResult(String result, AnimationController? animationController) {
