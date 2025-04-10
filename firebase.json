@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"qtism-math","appId":"1:142934592330:android:ac349686216965ac9e0fb3","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"qtism-math","configurations":{"android":"1:142934592330:android:ac349686216965ac9e0fb3","ios":"1:142934592330:ios:8b9f9b4526b21e489e0fb3","web":"1:142934592330:web:08f1ffdd09e65ed69e0fb3"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "qtism-math",
+          "appId": "1:142934592330:android:ac349686216965ac9e0fb3",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "qtism-math",
+          "configurations": {
+            "android": "1:142934592330:android:ac349686216965ac9e0fb3",
+            "ios": "1:142934592330:ios:8b9f9b4526b21e489e0fb3",
+            "web": "1:142934592330:web:08f1ffdd09e65ed69e0fb3"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
