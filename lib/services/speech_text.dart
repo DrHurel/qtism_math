@@ -17,7 +17,7 @@ class SpeechText {
   static Timer? _silenceTimer;
   static String _currentText = "";
   static final FlutterTts _flutterTts = FlutterTts();
-  static final GrammarParser grammarParser = GrammarParser();
+  static final Parser grammarParser = Parser();
 
   static final List<OperationEvaluator> _evaluators = [
     AdditionEvaluator(),
