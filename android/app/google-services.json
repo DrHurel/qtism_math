@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "142934592330",
+    "project_id": "qtism-math",
+    "storage_bucket": "qtism-math.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142934592330:android:ac349686216965ac9e0fb3",
+        "android_client_info": {
+          "package_name": "com.example.qtism_math"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0qpAJ3kSySckMNpd3RN4m01pw0fndZtQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
