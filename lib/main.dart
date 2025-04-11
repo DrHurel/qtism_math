@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:qtism_math/pages/home.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_vertexai/firebase_vertexai.dart';
 import 'firebase_options.dart';
 
 
@@ -23,8 +22,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model =
-      FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash');
 
     return MaterialApp(
       title: 'QTism Math',
