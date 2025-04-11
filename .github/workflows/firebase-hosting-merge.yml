@@ -15,7 +15,8 @@ jobs:
         run: |
           git clone https://github.com/flutter/flutter.git -b stable
           echo "$(pwd)/flutter/bin" >> $GITHUB_PATH
-          flutter --version
+      - name: Check Flutter version
+        run: flutter --version
       - run: flutter pub get
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
