@@ -1,5 +1,5 @@
 import 'package:qtism_math/common/app_strings.dart';
-import 'package:qtism_math/services/AI.dart';
+import 'package:qtism_math/services/ai.dart';
 import 'package:qtism_math/services/speech_text.dart';
 import 'package:qtism_math/services/math_expression_processor.dart';
 
