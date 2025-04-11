@@ -19,6 +19,7 @@ class TextToSpeechService {
   }
   
   Future<void> speak(String text) async {
+    await flutterTts.setLanguage('fr-FR');
     await flutterTts.speak(_formatTextForSpeech(text));
   }
   
