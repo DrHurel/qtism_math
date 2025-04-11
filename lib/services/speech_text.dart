@@ -5,12 +5,26 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:math_expressions/math_expressions.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:async';
-import 'dart:math';
+
+import '../common/app_strings.dart';
+import 'evaluators/operation_evaluator.dart';
+import 'evaluators/addition_evaluator.dart';
+import 'evaluators/subtraction_evaluator.dart';
+import 'evaluators/multiplication_evaluator.dart';
+import 'evaluators/division_evaluator.dart';
 
 class SpeechText {
   static Timer? _silenceTimer;
   static String _currentText = "";
-  static FlutterTts _flutterTts = FlutterTts();
+  static final FlutterTts _flutterTts = FlutterTts();
+  static final GrammarParser grammarParser = GrammarParser();
+
+  static final List<OperationEvaluator> _evaluators = [
+    AdditionEvaluator(),
+    SubtractionEvaluator(),
+    MultiplicationEvaluator(),
+    DivisionEvaluator(),
+  ];
 
   static Future<void> speakResult(String text) async {
     await _flutterTts.setLanguage('fr-FR');
@@ -98,8 +112,8 @@ class SpeechText {
   // Existing methods remain the same...
   static bool isValidMathExpression(String expression) {
     try {
-      Parser p = Parser();
-      p.parse(expression);
+    
+      grammarParser.parse(expression);
       return true;
     } catch (e) {
       return false;
@@ -128,18 +142,19 @@ class SpeechText {
         return evaluateEquation(expression);
       }
 
-      Parser p = Parser();
-      Expression exp = p.parse(expression);
+     
+      Expression exp = grammarParser.parse(expression);
       ContextModel cm = ContextModel();
 
       double eval = exp.evaluate(EvaluationType.REAL, cm);
 
-      return "Le résultat du calcul **$expression** est **${eval.toInt()}**";
+      return _formatString(AppStrings.mathExpressionResult, 
+          [expression, eval.toInt()]);
     } catch (e) {
       try {
         return evaluateEquation(expression);
       } catch (_) {
-        return "Je n'ai pas compris votre demande, reformulez votre proposition mathématique : $e";
+        return _formatString(AppStrings.mathExpressionParseError, [e]);
       }
     }
   }
@@ -149,17 +164,17 @@ class SpeechText {
       List<String> parts = equation.split('=');
 
       if (parts.length != 2) {
-        return "Format d'équation invalide";
+        return AppStrings.invalidEquationFormat;
       }
 
       String leftSide = parts[0].trim();
       String rightSide = parts[1].trim();
 
-      Parser p = Parser();
+      
       ContextModel cm = ContextModel();
 
-      Expression leftExp = p.parse(leftSide);
-      Expression rightExp = p.parse(rightSide);
+      Expression leftExp = grammarParser.parse(leftSide);
+      Expression rightExp = grammarParser.parse(rightSide);
 
       double leftValue = leftExp.evaluate(EvaluationType.REAL, cm);
       double rightValue = rightExp.evaluate(EvaluationType.REAL, cm);
@@ -168,61 +183,41 @@ class SpeechText {
       bool isEqual = (leftValue - rightValue).abs() < epsilon;
 
       if (isEqual) {
-        return "Oui, bonne réponse. L'expression **$leftSide = $rightSide** est correcte";
+        return _formatString(AppStrings.correctEquation, [leftSide, rightSide]);
       } else {
         String explanation;
         double error = (leftValue - rightValue).abs();
-
-        if (leftSide.contains("+") || rightSide.contains("+")) {
-          explanation = "Tu as fait une erreur dans une addition. "
-              '\n'
-              "En calculant, **$leftSide** donne **${leftValue.toInt()}**. "
-              '\n'
-              "Mais ces deux nombres ne sont pas égaux ! "
-              '\n'
-              "L'écart est de **${error.toInt()}**."
-              '\n'
-              "N'oublie pas qu'en addition, on ajoute les nombres ensemble."
-              '\n';
-        } else if (leftSide.contains("-") || rightSide.contains("-")) {
-          explanation = "Il y a une erreur dans une soustraction. "
-              '\n'
-              "En faisant les calculs, **$leftSide** donne **${leftValue.toInt()}**. "
-              '\n'
-              "Mais ces résultats ne sont pas identiques ! "
-              '\n'
-              "La différence entre les deux est de **${error.toInt()}**."
-              '\n'
-              "Fais bien attention en soustrayant."
-              '\n';
-        } else if (leftSide.contains("*") || rightSide.contains("*")) {
-          explanation = "Oups, une petite erreur dans une multiplication ! "
-              '\n'
-              "Si on fait les calculs, **$leftSide** vaut **${leftValue.toInt()}**. "
-              '\n'
-              "Ils ne sont pas égaux, il y a une différence de **${error.toInt()}**. "
-              '\n'
-              "N'oublie pas que multiplier, c'est comme ajouter plusieurs fois le même nombre.";
-        } else if (leftSide.contains("/") || rightSide.contains("/")) {
-          explanation = "Attention à la division ! "
-              '\n'
-              "Si on calcule, **$leftSide** donne **${leftValue.toInt()}**. "
-              '\n'
-              "Mais ces deux valeurs sont différentes, avec une différence de **${error.toInt()}**. "
-              '\n'
-              "En division, il faut bien vérifier combien de fois un nombre rentre dans un autre."
-              '\n';
+        
+        // Find appropriate evaluator based on the operation (improved)
+        final matchingEvaluators = _evaluators.where(
+          (e) => e.containsOperation(leftSide, rightSide),
+        );
+        OperationEvaluator? evaluator = matchingEvaluators.isNotEmpty ? matchingEvaluators.first : null;
+        
+        if (evaluator != null) {
+          explanation = evaluator.generateExplanation(
+            leftSide, 
+            rightSide, 
+            leftValue, 
+            rightValue, 
+            error
+          );
         } else {
-          explanation =
-              "Hmm, il semble y avoir une erreur, mais je ne suis pas sûr du type d'opération.";
+          explanation = AppStrings.defaultOperationError;
         }
-        return "Non, l'expression **$leftSide = $rightSide** est incorrecte. "
-            '\n'
-            "$explanation"
-            "La bonne réponse serait : **$leftSide = ${leftValue.toInt()}**";
+              
+        return '${_formatString(AppStrings.incorrectEquation, [leftSide, rightSide])}\n$explanation${_formatString(AppStrings.correctAnswerWouldBe, [leftSide, leftValue.toInt()])}';
       }
     } catch (e) {
-      return "Erreur dans l'évaluation de l'équation : $e";
+      return _formatString(AppStrings.equationEvaluationError, [e]);
     }
+  }
+
+  static String _formatString(String template, List<dynamic> arguments) {
+    String result = template;
+    for (int i = 0; i < arguments.length; i++) {
+      result = result.replaceAll('{$i}', arguments[i].toString());
+    }
+    return result;
   }
 }
