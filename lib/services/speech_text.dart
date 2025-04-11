@@ -102,6 +102,7 @@ class SpeechText {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         listenMode: stt.ListenMode.confirmation,
+        localeId: 'fr_FR',
       );
     } else {
       print("The user has denied the use of speech recognition.");
