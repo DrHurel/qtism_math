@@ -14,7 +14,6 @@ class AICommunication {
     return "";
   }
 
-
   Future<int?> extractUserResponseCalculValue(String text) async {
     // Provide a prompt that contains text
     final prompt = [Content.text('Répond seulement par un nombre. Extrait le nombre donné dans cette phrase : $text')];
@@ -23,5 +22,20 @@ class AICommunication {
       return int.parse(response.text!);
     }
     return null;
+  }
+  
+  Future<String> extractAndCalculateMathExpression(String text) async {
+    // Provide a prompt that contains text
+    final prompt = [Content.text(
+      'Extrait et calcule l\'opération mathématique contenue dans cette phrase. '
+      'Réponds uniquement par le résultat numérique. '
+      'Si aucune opération mathématique n\'est présente, réponds par une chaîne vide. '
+      'Phrase: $text'
+    )];
+    final response = await model.generateContent(prompt);
+    if (response.text != null){
+      return response.text!.trim();
+    }
+    return "";
   }
 }
