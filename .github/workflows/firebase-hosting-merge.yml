@@ -18,6 +18,8 @@ jobs:
       - name: Check Flutter version
         run: flutter --version
       - run: flutter pub get
+      - name: Build Flutter Web
+        run: flutter build web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
