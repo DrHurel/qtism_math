@@ -1,6 +1,7 @@
 import 'package:qtism_math/services/ai.dart';
 import 'package:qtism_math/services/speech_text.dart';
 import 'dart:developer' as developer;
+import 'dart:async';
 
 class InputService {
   String transcribedText = "";
@@ -26,33 +27,71 @@ class InputService {
     Function(String result) onResultProcessed
   ) async {
     clearTranscription();
+    bool processingCompleted = false;
+    String latestTranscription = "";
     
     developer.log('Starting voice input recording', name: 'InputService');
-    await SpeechText.toggleRecording(
-      (text) {
-        developer.log('Voice transcription update: "$text"', name: 'InputService');
-        _updateTranscription(text);
-      },
-      (expression, result) async {
-        developer.log('Voice input processed - Expression: "$expression"', name: 'InputService');
-        
-        // Always use AI-based extraction as per requirement
-        developer.log('Using AI-based math extraction', name: 'InputService');
-        String aiResult = await ai.extractAndCalculateMathExpression(expression);
-        
-        if (aiResult.isNotEmpty) {
-          developer.log('AI extracted result: $aiResult', name: 'InputService');
-          onResultProcessed(aiResult);
-        } else {
-          onResultProcessed("Je n'ai pas pu interpréter cette expression mathématique.");
-        }
-      },
-      clearTranscription,
-      (state) {
-        developer.log('Listening state changed: $state', name: 'InputService');
-        _updateListeningState(state);
-      },
-    );
+    
+    // Set up a timeout to ensure we always process the input
+    Timer? timeoutTimer = Timer(const Duration(seconds: 10), () {
+      if (!processingCompleted && latestTranscription.isNotEmpty) {
+        developer.log('Voice input timeout - forcing processing with text: "$latestTranscription"', 
+                     name: 'InputService');
+        _processVoiceInput(latestTranscription, onResultProcessed);
+        processingCompleted = true;
+      }
+    });
+    
+    try {
+      await SpeechText.toggleRecording(
+        (text) {
+          developer.log('Voice transcription update: "$text"', name: 'InputService');
+          latestTranscription = text; // Store the latest transcription
+          _updateTranscription(text);
+        },
+        (expression, result) async {
+          developer.log('Voice input processed - Expression: "$expression"', name: 'InputService');
+          timeoutTimer?.cancel(); // Cancel the timeout as normal processing occurred
+          processingCompleted = true;
+          await _processVoiceInput(expression, onResultProcessed);
+        },
+        clearTranscription,
+        (state) {
+          developer.log('Listening state changed: $state', name: 'InputService');
+          _updateListeningState(state);
+          
+          // If listening has stopped and processing hasn't completed, process the latest transcription
+          if (!state && !processingCompleted && latestTranscription.isNotEmpty) {
+            developer.log('Listening stopped but processing not completed - forcing with text: "$latestTranscription"', 
+                         name: 'InputService');
+            timeoutTimer?.cancel();
+            _processVoiceInput(latestTranscription, onResultProcessed);
+            processingCompleted = true;
+          }
+        },
+      );
+    } catch (e) {
+      developer.log('Error in voice input processing: $e', name: 'InputService');
+      if (!processingCompleted && latestTranscription.isNotEmpty) {
+        _processVoiceInput(latestTranscription, onResultProcessed);
+      } else if (!processingCompleted) {
+        onResultProcessed("Désolé, je n'ai pas pu traiter votre entrée vocale.");
+      }
+      timeoutTimer?.cancel();
+    }
+  }
+  
+  Future<void> _processVoiceInput(String text, Function(String result) onResultProcessed) async {
+    developer.log('Using AI-based math extraction for: "$text"', name: 'InputService');
+    String aiResult = await ai.extractAndCalculateMathExpression(text);
+    
+    if (aiResult.isNotEmpty) {
+      developer.log('AI extracted result: $aiResult', name: 'InputService');
+      onResultProcessed(aiResult);
+    } else {
+      developer.log('No math expression found, returning error message', name: 'InputService');
+      onResultProcessed("Je n'ai pas pu interpréter cette expression mathématique.");
+    }
   }
   
   void _updateTranscription(String transcription) {

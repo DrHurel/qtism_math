@@ -107,7 +107,7 @@ class QTController {
   }
   
   void handleVoiceInput(AnimationController animationController) {
-    developer.log('QTController - Handling voice input', name: 'QTController');
+    developer.log('QTController - Starting voice input processing', name: 'QTController');
     resetEmotion();
     _resetAnimation(animationController);
     
