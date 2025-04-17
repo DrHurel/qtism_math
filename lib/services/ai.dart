@@ -24,11 +24,19 @@ class AICommunication {
   Future<int?> extractUserResponseCalculValue(String text) async {
     developer.log('Starting number extraction: "$text"', name: 'AI');
     try {
-      final prompt = [Content.text('Répond seulement par un nombre. Extrait le nombre donné dans cette phrase : $text')];
+      final prompt = [Content.text(
+        'Extrait UNIQUEMENT le nombre que l\'utilisateur affirme être la réponse. '
+        'NE calcule PAS l\'expression toi-même. '
+        'Si l\'utilisateur dit "X égal Y" ou "X donne Y" ou "X fait Y" ou "X ça fait Y", renvoie Y. '
+        'Réponds UNIQUEMENT par le nombre, rien d\'autre. '
+        'Phrase: $text'
+      )];
+      
       final response = await model.generateContent(prompt);
       if (response.text != null){
         developer.log('Extracted number text: "${response.text}"', name: 'AI');
-        return int.parse(response.text!);
+        final cleanResponse = response.text!.trim();
+        return int.tryParse(cleanResponse);
       }
       developer.log('No number found in response', name: 'AI');
       return null;

@@ -127,6 +127,12 @@ class QTController {
       transcribedText = text;
     });
     
+    // Handle command pattern for question generation requests
+    if (text.startsWith("#COMMAND#")) {
+      _handleVoiceCommand(text.substring(9), animationController);
+      return;
+    }
+    
     developer.log('QTController - Processing voice result for problem type: ${_problemService.currentProblemType}', name: 'QTController');
     switch (_problemService.currentProblemType) {
       case ProblemType.calculation:
@@ -140,6 +146,25 @@ class QTController {
       default:
         developer.log('QTController - Handling as general expression', name: 'QTController');
         showResult(text, animationController);
+    }
+  }
+  
+  void _handleVoiceCommand(String command, AnimationController animationController) {
+    developer.log('QTController - Handling voice command: $command', name: 'QTController');
+    switch (command) {
+      case "GENERATE_TRUE_FALSE":
+        developer.log('QTController - Generating true/false problem from voice command', name: 'QTController');
+        generateTrueOrFalseProblem();
+        _resetAnimation(animationController);
+        break;
+      case "GENERATE_CALCULATION":
+        developer.log('QTController - Generating calculation problem from voice command', name: 'QTController');
+        generateCalculationProblem();
+        _resetAnimation(animationController);
+        break;
+      default:
+        developer.log('QTController - Unknown command: $command', name: 'QTController');
+        showResult("Je ne comprends pas cette demande. Vous pouvez me demander une question de calcul ou une question vrai/faux.", animationController);
     }
   }
 

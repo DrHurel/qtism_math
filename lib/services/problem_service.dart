@@ -3,11 +3,17 @@ import 'package:qtism_math/common/enum.dart';
 import 'package:qtism_math/services/problem_generator.dart';
 import 'package:qtism_math/services/math_expression_processor.dart';
 import 'package:qtism_math/utils/string_formatter.dart';
+import 'dart:developer' as developer;
+import 'dart:math';
 
 class ProblemService {
   String generatedProblem = "";
   ProblemType currentProblemType = ProblemType.none;
   bool? expectedTruthValue;
+  String currentProblem = "";
+  int expectedAnswer = 0;
+  final _random = Random();
+  final _operations = ["+", "-", "*"];
   
   // Callback for when problem state changes
   final Function(String displayText, bool isDefaultBubble) onProblemStateChanged;
@@ -15,17 +21,37 @@ class ProblemService {
   ProblemService({required this.onProblemStateChanged});
   
   String generateCalculationProblem() {
-    final problemData = ProblemGenerator.generateCalculationProblem();
-    final problem = problemData['problem'];
+    // Debug what's being generated
+    int num1 = _random.nextInt(10) + 1;
+    int num2 = _random.nextInt(10) + 1;
+    int operationIndex = _random.nextInt(_operations.length);
+    String operation = _operations[operationIndex];
     
-    generatedProblem = problem;
+    currentProblem = "$num1 $operation $num2";
+    
+    // Calculate the expected answer based on the operation
+    switch (operation) {
+      case "+":
+        expectedAnswer = num1 + num2;
+        break;
+      case "-":
+        expectedAnswer = num1 - num2;
+        break;
+      case "*":
+        expectedAnswer = num1 * num2;
+        developer.log('Multiplication: $num1 * $num2 = $expectedAnswer', name: 'ProblemService');
+        break;
+      case "÷":
+        expectedAnswer = (num1 / num2).round(); // Simple integer division
+        break;
+    }
+  
+    developer.log('Generated calculation problem: "$currentProblem"', name: 'ProblemService');
+    developer.log('Expected answer: $expectedAnswer', name: 'ProblemService');
+    
     currentProblemType = ProblemType.calculation;
-    expectedTruthValue = null;
-    
-    String displayText = StringFormatter.format(AppStrings.calculateResult, [problem]);
-    onProblemStateChanged(displayText, true);
-    
-    return StringFormatter.format(AppStrings.calculateResultSpoken, [problem]);
+    _updateProblemState("Calcule $currentProblem", true);
+    return "Calcule $currentProblem";
   }
   
   String generateTrueOrFalseProblem() {
@@ -44,25 +70,21 @@ class ProblemService {
   }
   
   String checkCalculationAnswer(int userAnswer) {
-    int correctAnswer = MathExpressionProcessor.calculateResult(generatedProblem);
-    bool isCorrect = userAnswer == correctAnswer;
+    // Add debug logging
+    developer.log('ProblemService - Checking calculation answer', name: 'ProblemService');
+    developer.log('  Current problem: $currentProblem', name: 'ProblemService');
+    developer.log('  Expected answer: $expectedAnswer', name: 'ProblemService');
+    developer.log('  User answer: $userAnswer', name: 'ProblemService');
     
-    String resultMessage;
-    if (isCorrect) {
-      resultMessage = StringFormatter.format(
-        AppStrings.correctCalculationAnswer,
-        [generatedProblem, correctAnswer]
-      );
+    if (userAnswer == expectedAnswer) {
+      developer.log('  Answer is correct!', name: 'ProblemService');
+      _handleCorrectAnswer();
+      return _getCorrectAnswerMessage();
     } else {
-      resultMessage = StringFormatter.format(
-        AppStrings.incorrectCalculationAnswer,
-        [generatedProblem, correctAnswer]
-      );
+      developer.log('  Answer is incorrect!', name: 'ProblemService');
+      _handleIncorrectAnswer();
+      return "Non, ce n'est pas la bonne réponse. Le résultat de $currentProblem est $expectedAnswer.";
     }
-    
-    resetProblemType();
-    onProblemStateChanged(resultMessage, false);
-    return resultMessage;
   }
   
   String checkTrueFalseAnswer(bool? userAnswer) {
@@ -93,5 +115,21 @@ class ProblemService {
   
   void resetProblemType() {
     currentProblemType = ProblemType.none;
+  }
+  
+  void _updateProblemState(String displayText, bool isDefaultBubble) {
+    onProblemStateChanged(displayText, isDefaultBubble);
+  }
+  
+  void _handleCorrectAnswer() {
+    resetProblemType();
+  }
+  
+  void _handleIncorrectAnswer() {
+    resetProblemType();
+  }
+  
+  String _getCorrectAnswerMessage() {
+    return "Oui, c'est la bonne réponse ! Le résultat de $currentProblem est $expectedAnswer.";
   }
 }

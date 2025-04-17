@@ -83,6 +83,13 @@ class InputService {
   
   Future<void> _processVoiceInput(String text, Function(String result) onResultProcessed) async {
     developer.log('Using AI-based math extraction for: "$text"', name: 'InputService');
+    
+    // Check if user is requesting a question
+    if (_isQuestionRequest(text)) {
+      _handleQuestionRequest(text, onResultProcessed);
+      return;
+    }
+    
     String aiResult = await ai.extractAndCalculateMathExpression(text);
     
     if (aiResult.isNotEmpty) {
@@ -92,6 +99,39 @@ class InputService {
       developer.log('No math expression found, returning error message', name: 'InputService');
       onResultProcessed("Je n'ai pas pu interpréter cette expression mathématique.");
     }
+  }
+  
+  bool _isQuestionRequest(String text) {
+    text = text.toLowerCase();
+    return text.contains("pose") || text.contains("donne") || text.contains("demande") || 
+           text.contains("vrai ou faux") || text.contains("calcul");
+  }
+  
+  void _handleQuestionRequest(String text, Function(String result) onResultProcessed) {
+    developer.log('Detected question request: "$text"', name: 'InputService');
+    text = text.toLowerCase();
+    
+    // Using a command pattern to avoid callback nesting
+    onResultProcessed("#COMMAND#" + (
+      (_isTrueOrFalseRequest(text)) ? "GENERATE_TRUE_FALSE" : 
+      (_isCalculationRequest(text)) ? "GENERATE_CALCULATION" : 
+      "UNKNOWN_REQUEST"
+    ));
+  }
+  
+  bool _isTrueOrFalseRequest(String text) {
+    text = text.toLowerCase();
+    return text.contains("vrai ou faux") || 
+           (text.contains("question") && text.contains("vrai")) ||
+           (text.contains("pose") && text.contains("vrai"));
+  }
+  
+  bool _isCalculationRequest(String text) {
+    text = text.toLowerCase();
+    return text.contains("calcul") || 
+           (text.contains("question") && text.contains("calcul")) ||
+           (text.contains("pose") && text.contains("mathématique")) ||
+           (text.contains("problème") && text.contains("math"));
   }
   
   void _updateTranscription(String transcription) {
