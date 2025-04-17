@@ -5,6 +5,7 @@ import 'package:qtism_math/services/text_to_speech_service.dart';
 import 'package:qtism_math/services/emotion_service.dart';
 import 'package:qtism_math/services/problem_service.dart';
 import 'package:qtism_math/services/input_service.dart';
+import 'dart:developer' as developer;
 
 class QTController {
   // State variables
@@ -75,56 +76,73 @@ class QTController {
   
   // Public API methods
   Future<void> speakResult(String text) async {
+    developer.log('QTController - Speaking: "$text"', name: 'QTController');
     await _ttsService.speak(text);
   }
   
   void clearTranscription() {
+    developer.log('QTController - Clearing transcription', name: 'QTController');
     _inputService.clearTranscription();
   }
   
   void generateCalculationProblem() {
+    developer.log('QTController - Generating calculation problem', name: 'QTController');
     String textToSpeak = _problemService.generateCalculationProblem();
+    developer.log('QTController - Generated problem: "$textToSpeak"', name: 'QTController');
     speakResult(textToSpeak);
     _emotionService.resetEmotion();
   }
   
   void generateTrueOrFalseProblem() {
+    developer.log('QTController - Generating true/false problem', name: 'QTController');
     String textToSpeak = _problemService.generateTrueOrFalseProblem();
+    developer.log('QTController - Generated problem: "$textToSpeak"', name: 'QTController');
     speakResult(textToSpeak);
     _emotionService.resetEmotion();
   }
   
   void resetEmotion() {
+    developer.log('QTController - Resetting emotion', name: 'QTController');
     _emotionService.resetEmotion();
   }
   
   void handleVoiceInput(AnimationController animationController) {
+    developer.log('QTController - Handling voice input', name: 'QTController');
     resetEmotion();
     _resetAnimation(animationController);
     
     _inputService.handleVoiceInput((result) {
+      developer.log('QTController - Voice input result received: "$result"', name: 'QTController');
       _processVoiceResult(result, animationController);
     });
   }
   
   void _processVoiceResult(String text, AnimationController animationController) {
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      developer.log('QTController - Empty voice result, ignoring', name: 'QTController');
+      return;
+    }
     
     setState(() {
       transcribedText = text;
     });
+    
+    developer.log('QTController - Processing voice result for problem type: ${_problemService.currentProblemType}', name: 'QTController');
     switch (_problemService.currentProblemType) {
       case ProblemType.calculation:
+        developer.log('QTController - Handling as calculation problem', name: 'QTController');
         handleCalculationSubmission(text, animationController);
         break;
       case ProblemType.trueOrFalse:
+        developer.log('QTController - Handling as true/false problem', name: 'QTController');
         handleTrueOrFalseSubmission(text, animationController);
         break;
       default:
+        developer.log('QTController - Handling as general expression', name: 'QTController');
         showResult(text, animationController);
     }
   }
-  
+
   void _resetAnimation(AnimationController animationController) {
     animationController.reset();
     animationController.forward();
@@ -151,29 +169,37 @@ class QTController {
   }
   
   void handleCalculationSubmission(String text, AnimationController animationController) {
+    developer.log('QTController - Submitting calculation answer: "$text"', name: 'QTController');
     _inputService.extractNumberFromText(text).then((value) {
       if (value != null) {
-      String result = _problemService.checkCalculationAnswer(value);
-      showResult(result, animationController);
+        developer.log('QTController - Extracted number: $value', name: 'QTController');
+        String result = _problemService.checkCalculationAnswer(value);
+        developer.log('QTController - Calculation check result: "$result"', name: 'QTController');
+        showResult(result, animationController);
       } else {
+        developer.log('QTController - Invalid number input', name: 'QTController');
         showResult(AppStrings.invalidNumberInput, animationController);
       }
     });
   }
 
-  
   void handleTrueOrFalseSubmission(String text, AnimationController animationController) {
+    developer.log('QTController - Submitting true/false answer: "$text"', name: 'QTController');
     _inputService.parseTrueFalseInput(text).then((value) {
+      developer.log('QTController - Parsed true/false value: $value', name: 'QTController');
       String result = _problemService.checkTrueFalseAnswer(value);
+      developer.log('QTController - True/false check result: "$result"', name: 'QTController');
       showResult(result, animationController);
     });
   }
   
   void showResult(String result, AnimationController? animationController) {
+    developer.log('QTController - Showing result: "$result"', name: 'QTController');
     var emotionResult = _emotionService.processEmotionFromText(result, animationController);
     String newEmotion = emotionResult.emotion;
     bool isCorrect = emotionResult.isCorrect;
 
+    developer.log('QTController - Emotion result: emotion=$newEmotion, isCorrect=$isCorrect', name: 'QTController');
     _updateEmotionAndText(newEmotion, result, isCorrect, animationController);
     speakResult(result);
   }
