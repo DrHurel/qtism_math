@@ -16,11 +16,11 @@ class SubtractionEvaluator implements OperationEvaluator {
   ) {
     return "Il y a une erreur dans une soustraction. "
         '\n'
-        "En faisant les calculs, **$leftSide** donne **${leftValue.toInt()}**. "
+        "En faisant les calculs, $leftSide donne ${leftValue.toInt()}. "
         '\n'
         "Mais ces résultats ne sont pas identiques ! "
         '\n'
-        "La différence entre les deux est de **${error.toInt()}**."
+        "La différence entre les deux est de ${error.toInt()}."
         '\n'
         "Fais bien attention en soustrayant."
         '\n';

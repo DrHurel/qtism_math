@@ -16,9 +16,9 @@ class MultiplicationEvaluator implements OperationEvaluator {
   ) {
     return "Oups, une petite erreur dans une multiplication ! "
         '\n'
-        "Si on fait les calculs, **$leftSide** vaut **${leftValue.toInt()}**. "
+        "Si on fait les calculs, $leftSide vaut ${leftValue.toInt()}. "
         '\n'
-        "Ils ne sont pas égaux, il y a une différence de **${error.toInt()}**. "
+        "Ils ne sont pas égaux, il y a une différence de ${error.toInt()}. "
         '\n'
         "N'oublie pas que multiplier, c'est comme ajouter plusieurs fois le même nombre.";
   }

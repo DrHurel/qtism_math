@@ -16,11 +16,11 @@ class AdditionEvaluator implements OperationEvaluator {
   ) {
     return "Tu as fait une erreur dans une addition. "
         '\n'
-        "En calculant, **$leftSide** donne **${leftValue.toInt()}**. "
+        "En calculant, $leftSide donne ${leftValue.toInt()}. "
         '\n'
         "Mais ces deux nombres ne sont pas égaux ! "
         '\n'
-        "L'écart est de **${error.toInt()}**."
+        "L'écart est de ${error.toInt()}."
         '\n'
         "N'oublie pas qu'en addition, on ajoute les nombres ensemble."
         '\n';

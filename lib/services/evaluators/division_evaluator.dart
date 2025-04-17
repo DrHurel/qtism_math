@@ -16,9 +16,9 @@ class DivisionEvaluator implements OperationEvaluator {
   ) {
     return "Attention à la division ! "
         '\n'
-        "Si on calcule, **$leftSide** donne **${leftValue.toInt()}**. "
+        "Si on calcule, $leftSide donne ${leftValue.toInt()}. "
         '\n'
-        "Mais ces deux valeurs sont différentes, avec une différence de **${error.toInt()}**. "
+        "Mais ces deux valeurs sont différentes, avec une différence de ${error.toInt()}. "
         '\n'
         "En division, il faut bien vérifier combien de fois un nombre rentre dans un autre."
         '\n';
