@@ -33,12 +33,6 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
-        
-      - name: Update minSdkVersion
-        run: |
-          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 23/g' android/app/build.gradle
-          echo "Updated minSdkVersion in build.gradle to 23"
-          grep "minSdkVersion" android/app/build.gradle
 
       - name: Run tests (if available)
         run: flutter test || echo "No tests available or tests failed"
