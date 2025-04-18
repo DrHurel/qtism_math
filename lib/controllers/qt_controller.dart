@@ -123,15 +123,16 @@ class QTController {
       return;
     }
     
-    setState(() {
-      transcribedText = text;
-    });
-    
     // Handle command pattern for question generation requests
     if (text.startsWith("#COMMAND#")) {
+      // Don't set transcribed text for commands
       _handleVoiceCommand(text.substring(9), animationController);
       return;
     }
+    
+    setState(() {
+      transcribedText = text;
+    });
     
     developer.log('QTController - Processing voice result for problem type: ${_problemService.currentProblemType}', name: 'QTController');
     switch (_problemService.currentProblemType) {
