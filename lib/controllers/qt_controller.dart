@@ -130,6 +130,15 @@ class QTController {
       return;
     }
     
+    // Handle direct true/false answers
+    if (text.startsWith("#TRUEFALSEANSWER#")) {
+      bool userAnswer = text.substring(17) == "TRUE";
+      developer.log('QTController - Direct true/false answer detected: $userAnswer', name: 'QTController');
+      String result = _problemService.checkTrueFalseAnswer(userAnswer);
+      showResult(result, animationController);
+      return;
+    }
+    
     setState(() {
       transcribedText = text;
     });

@@ -90,6 +90,17 @@ class InputService {
       return;
     }
     
+    // First, check if this might be a true/false answer (bypass math extraction)
+    if (_isPotentialTrueFalseAnswer(text)) {
+      bool? tfResult = await parseTrueFalseInput(text);
+      if (tfResult != null) {
+        // Return a special format that QTController can recognize
+        onResultProcessed("#TRUEFALSEANSWER#${tfResult ? "TRUE" : "FALSE"}");
+        return;
+      }
+    }
+    
+    // Otherwise, process as a mathematical expression
     String aiResult = await ai.extractAndCalculateMathExpression(text);
     
     if (aiResult.isNotEmpty) {
@@ -99,6 +110,13 @@ class InputService {
       developer.log('No math expression found, returning error message', name: 'InputService');
       onResultProcessed("Je n'ai pas pu interpréter cette expression mathématique.");
     }
+  }
+  
+  // Helper method to detect if text is likely a true/false answer
+  bool _isPotentialTrueFalseAnswer(String text) {
+    text = text.toLowerCase().trim();
+    return text.contains("vrai") || text.contains("faux") || 
+           text.contains("c'est") || text.contains("je pense");
   }
   
   bool _isQuestionRequest(String text) {
@@ -160,6 +178,20 @@ class InputService {
   
   Future<bool?> parseTrueFalseInput(String text) async {
     developer.log('Parsing true/false input: "$text"', name: 'InputService');
+    
+    // Improve direct parsing for common patterns
+    String lowerText = text.toLowerCase().trim();
+    
+    // Direct matches for obvious true/false statements
+    if (lowerText == "vrai" || 
+        lowerText == "c'est vrai" || 
+        lowerText.contains("je pense que c'est vrai")) return true;
+        
+    if (lowerText == "faux" || 
+        lowerText == "c'est faux" || 
+        lowerText.contains("je pense que c'est faux")) return false;
+    
+    // For more complex sentences, use AI
     String aiResponse = await ai.translateUserResponseTrueFalse(text);
     developer.log('AI response for true/false: "$aiResponse"', name: 'InputService');
 
@@ -171,6 +203,6 @@ class InputService {
     
     developer.log('Parsed true/false result: ${result != null ? (result ? "true" : "false") : "null"}', 
                  name: 'InputService');
-    return result; // indécis ou réponse imprévisible
+    return result;
   }
 }

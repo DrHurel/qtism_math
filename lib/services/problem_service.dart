@@ -88,7 +88,7 @@ class ProblemService {
   
   String checkTrueFalseAnswer(bool? userAnswer) {
     if (userAnswer == null) {
-      return AppStrings.invalidTrueFalseInput;
+      return "Je n'ai pas compris si votre réponse est vrai ou faux. Veuillez répondre par 'vrai' ou 'faux'.";
     }
     
     String valueAsText = userAnswer ? AppStrings.trueValue : AppStrings.falseValue;
