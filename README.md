@@ -16,7 +16,7 @@ QTism Math is an interactive mathematical learning application designed to help 
 
 ## How to Use
 
-1. **Start the App**: Open the app in your browser at [https://qtism-math.web.app/](https://qtism-math.web.app/)
+1. **Start the App**: Open the app in your browser at [https://qtism-math.web.app/](https://qtism-math.web.app/) (Chrome browser recommended for the best experience)
 2. **Request a Problem**: Say "Pose-moi un problème de calcul" or "Donne-moi une question vrai ou faux"
 3. **Answer the Question**: Speak your answer clearly into the microphone
 4. **Get Feedback**: The robot will tell you if you're correct and show an emotional response
