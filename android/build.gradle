@@ -5,11 +5,11 @@ allprojects {
     }
 }
 
-android {                                                                                     │
-    defaultConfig {                                                                             │
-        minSdkVersion 23                                                                          │
-    }                                                                                           │
-}         
+android {
+    defaultConfig {
+        minSdkVersion 23
+    }
+}
 
 rootProject.buildDir = "../build"
 subprojects {
