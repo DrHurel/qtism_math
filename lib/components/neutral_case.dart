@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class neutral_case extends StatelessWidget {
-  const neutral_case({
+class NeutralCase extends StatelessWidget {
+  const NeutralCase({
     super.key,
     required this.emotionTop,
     required this.emotionRight,

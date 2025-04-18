@@ -35,7 +35,7 @@ class QTRobotHomePage extends StatelessWidget {
             fontSize = constraints.maxWidth * 0.05;
           }
 
-          Widget robotContent_ = robotContent(fontSize: fontSize, isNarrowScreen: isNarrowScreen, constraints: constraints);
+          Widget robotContent_ = RobotContent(fontSize: fontSize, isNarrowScreen: isNarrowScreen, constraints: constraints);
 
           Widget gridContent_ = GridContent(fontSize: fontSize, isNarrowScreen: isNarrowScreen, constraints: constraints);
 

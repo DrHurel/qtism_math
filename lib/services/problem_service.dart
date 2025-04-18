@@ -1,7 +1,6 @@
 import 'package:qtism_math/common/app_strings.dart';
 import 'package:qtism_math/common/enum.dart';
 import 'package:qtism_math/services/problem_generator.dart';
-import 'package:qtism_math/services/math_expression_processor.dart';
 import 'package:qtism_math/utils/string_formatter.dart';
 import 'dart:developer' as developer;
 import 'dart:math';

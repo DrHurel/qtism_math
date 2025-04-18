@@ -1,5 +1,5 @@
-import 'package:qtism_math/services/ai.dart';
-import 'package:qtism_math/services/speech_text.dart';
+import 'package:qtism_math/services/input_handler/ai.dart';
+import 'package:qtism_math/services/input_handler/speech_text.dart';
 import 'dart:developer' as developer;
 import 'dart:async';
 
@@ -51,7 +51,7 @@ class InputService {
         },
         (expression, result) async {
           developer.log('Voice input processed - Expression: "$expression"', name: 'InputService');
-          timeoutTimer?.cancel(); // Cancel the timeout as normal processing occurred
+          timeoutTimer.cancel(); // Cancel the timeout as normal processing occurred
           processingCompleted = true;
           await _processVoiceInput(expression, onResultProcessed);
         },
@@ -64,7 +64,7 @@ class InputService {
           if (!state && !processingCompleted && latestTranscription.isNotEmpty) {
             developer.log('Listening stopped but processing not completed - forcing with text: "$latestTranscription"', 
                          name: 'InputService');
-            timeoutTimer?.cancel();
+            timeoutTimer.cancel();
             _processVoiceInput(latestTranscription, onResultProcessed);
             processingCompleted = true;
           }
@@ -77,7 +77,7 @@ class InputService {
       } else if (!processingCompleted) {
         onResultProcessed("Désolé, je n'ai pas pu traiter votre entrée vocale.");
       }
-      timeoutTimer?.cancel();
+      timeoutTimer.cancel();
     }
   }
   
@@ -112,11 +112,9 @@ class InputService {
     text = text.toLowerCase();
     
     // Using a command pattern to avoid callback nesting
-    onResultProcessed("#COMMAND#" + (
-      (_isTrueOrFalseRequest(text)) ? "GENERATE_TRUE_FALSE" : 
+    onResultProcessed("#COMMAND#${(_isTrueOrFalseRequest(text)) ? "GENERATE_TRUE_FALSE" : 
       (_isCalculationRequest(text)) ? "GENERATE_CALCULATION" : 
-      "UNKNOWN_REQUEST"
-    ));
+      "UNKNOWN_REQUEST"}");
   }
   
   bool _isTrueOrFalseRequest(String text) {

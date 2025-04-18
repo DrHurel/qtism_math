@@ -100,7 +100,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
             ),
           ),
           if (_controller.isTransitioning && _controller.previousEmotion != "neutral")
-            not_neutral_case(
+            NotNeutralCase(
                 emotionTop: emotionTop,
                 emotionRight: emotionRight,
                 emotionWidth: emotionWidth,
@@ -109,7 +109,7 @@ class _QTState extends State<QT> with SingleTickerProviderStateMixin {
                 opacityAnimation: _opacityAnimation,
                 previousEmotion: _controller.previousEmotion),
           if (_controller.currentEmotion != "neutral")
-            neutral_case(
+            NeutralCase(
                 emotionTop: emotionTop,
                 emotionRight: emotionRight,
                 emotionWidth: emotionWidth,

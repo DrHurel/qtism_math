@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class robotContent extends StatelessWidget {
-  const robotContent({
+class RobotContent extends StatelessWidget {
+  const RobotContent({
     super.key,
     required this.fontSize,
     required this.isNarrowScreen,

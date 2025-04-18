@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:qtism_math/common/app_strings.dart';
 import 'package:qtism_math/common/enum.dart';
-import 'package:qtism_math/services/text_to_speech_service.dart';
-import 'package:qtism_math/services/emotion_service.dart';
+import 'package:qtism_math/services/input_handler/text_to_speech_service.dart';
+import 'package:qtism_math/services/emotion/emotion_service.dart';
 import 'package:qtism_math/services/problem_service.dart';
-import 'package:qtism_math/services/input_service.dart';
+import 'package:qtism_math/services/input_handler/input_service.dart';
 import 'dart:developer' as developer;
 
 class QTController {
@@ -49,7 +49,7 @@ class QTController {
   // Callback handlers
   void _handleEmotionChanged(String emotion, String previousEmotion, bool isTransitioning) {
     setState(() {
-      this.currentEmotion = emotion;
+      currentEmotion = emotion;
       this.previousEmotion = previousEmotion;
       this.isTransitioning = isTransitioning;
     });

@@ -16,7 +16,7 @@ class TranscribedTextFilled extends StatelessWidget {
       width: double.infinity,
       padding:
           const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white.withValues(alpha: 0.9),
       child: Text(
         _transcribedText,
         style: TextStyle(

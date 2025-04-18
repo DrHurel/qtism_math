@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qtism_math/services/emotion_detector.dart';
-import 'package:qtism_math/services/emotion_manager.dart';
+import 'package:qtism_math/services/emotion/emotion_detector.dart';
+import 'package:qtism_math/services/emotion/emotion_manager.dart';
 
 class EmotionService {
   // State variables

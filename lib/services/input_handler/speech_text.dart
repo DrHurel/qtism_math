@@ -6,12 +6,13 @@ import 'package:math_expressions/math_expressions.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:async';
 
-import '../common/app_strings.dart';
-import 'evaluators/operation_evaluator.dart';
-import 'evaluators/addition_evaluator.dart';
-import 'evaluators/subtraction_evaluator.dart';
-import 'evaluators/multiplication_evaluator.dart';
-import 'evaluators/division_evaluator.dart';
+import '../../common/app_strings.dart';
+import '../evaluators/operation_evaluator.dart';
+import '../evaluators/addition_evaluator.dart';
+import '../evaluators/subtraction_evaluator.dart';
+import '../evaluators/multiplication_evaluator.dart';
+import '../evaluators/division_evaluator.dart';
+import 'dart:developer' as developer;
 
 class SpeechText {
   static Timer? _silenceTimer;
@@ -105,7 +106,7 @@ class SpeechText {
         localeId: 'fr_FR',
       );
     } else {
-      print("The user has denied the use of speech recognition.");
+      developer.log("The user has denied the use of speech recognition.");
     }
     return available;
   }
